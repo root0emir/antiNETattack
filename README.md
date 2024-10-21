@@ -8,7 +8,7 @@ antiNETattack: Advanced Network Intrusion Detection & Prevention Tool
 Overview
 antiNETattack is a professional, real-time network intrusion detection and prevention tool built for monitoring network traffic and detecting various types of network-based attacks. It automatically detects and blocks malicious activity such as port scanning, DoS attacks, ARP spoofing, DNS spoofing, and malicious HTTP uploads.
 
-Features
+Features---
 Real-Time Detection: Monitors live network traffic for suspicious activities.
 Auto-blocking: Automatically blocks suspicious IP addresses using iptables.
 Attack Detection Modules:
