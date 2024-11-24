@@ -17,6 +17,18 @@ import os
 def load_and_preprocess_data(filepath):
     df = pd.read_csv(filepath)
 
+    # Veri tiplerini kontrol et ve dönüştür
+    print("Veri Tipleri:")
+    print(df.dtypes)
+
+    # 'packet_size' ve 'protocol' sütunlarını sayısal değerlere dönüştür
+    df['packet_size'] = pd.to_numeric(df['packet_size'], errors='coerce')
+    df['protocol'] = pd.to_numeric(df['protocol'], errors='coerce')
+
+    # Eksik verileri kontrol et
+    print("Eksik Veriler:")
+    print(df.isnull().sum())
+
     # Eksik verileri sıfırla dolduruyoruz
     df.fillna(0, inplace=True)
 
