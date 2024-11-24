@@ -1,0 +1,6 @@
+packet_size,protocol,attack_type
+300,1,Normal
+500,1,DoS
+250,2,Probe
+1000,1,R2L
+700,2,U2R
