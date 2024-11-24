@@ -13,10 +13,7 @@ from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.models import load_model
 import os
 
-if os.path.exists('./cnn_attack_model.h5'):
-    cnn_model = load_model('./cnn_attack_model.h5')
-
-# Veri seti yükleme
+# Veri seti yükleme ve ön işleme
 def load_and_preprocess_data(filepath):
     df = pd.read_csv(filepath)
 
@@ -131,24 +128,31 @@ def main():
     X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], 1))
     X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], 1))
 
-    # Modelin oluşturulması
-    model = build_model(X_train.shape[1:], y_one_hot.shape[1])
+    # Modeli oluşturma
+    model = None
+    if os.path.exists('./cnn_attack_model.h5'):
+        model = load_model('./cnn_attack_model.h5')
+        print("Model başarıyla yüklendi!")
+    else:
+        model = build_model(X_train.shape[1:], y_one_hot.shape[1])
+        print("Yeni model oluşturuluyor...")
 
     # Modelin özetini yazdıralım
     model.summary()
 
-    # Modeli eğitelim
-    history = train_model(model, X_train, y_train, X_test, y_test)
+    # Modeli eğitelim (Eğer model zaten yoksa eğitilecek)
+    if model is not None and not os.path.exists('./cnn_attack_model.h5'):
+        history = train_model(model, X_train, y_train, X_test, y_test)
 
-    # Modelin değerlendirilmesi
-    evaluate_model(model, X_test, y_test, encoder, history)
+        # Modelin değerlendirilmesi
+        evaluate_model(model, X_test, y_test, encoder, history)
 
-    # Modeli kaydetme
-    model.save('cnn_attack_model.h5')
+        # Modeli kaydetme
+        model.save('cnn_attack_model.h5')
 
-    # Etiket ve scaler'ı kaydedelim
-    joblib.dump(scaler, 'scaler.pkl')
-    joblib.dump(encoder, 'encoder.pkl')
+        # Etiket ve scaler'ı kaydedelim
+        joblib.dump(scaler, 'scaler.pkl')
+        joblib.dump(encoder, 'encoder.pkl')
 
 # Ana fonksiyonu çalıştırma
 if __name__ == "__main__":
