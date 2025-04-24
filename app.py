@@ -9,6 +9,22 @@ import datetime
 from collections import deque
 from ai_model import analyze_packet
 
+# Copyright (c) 2025 root0emir. All rights reserved.
+
+# antiNETattack is a tool developed by root0emir and is released under the MIT License.
+# This software can be used, copied, modified, and distributed under the terms of the MIT License.
+# However, the name of the software, logos, and other promotional elements are the exclusive property of the developer.
+
+# The use of the software for commercial purposes or the unauthorized use of the project name/logos is prohibited.
+# The license applies only to the source code and documentation of the software.
+
+# This software is provided "as is" without any warranties. Users use it at their own risk.
+
+#############################################################################
+#  Securonis GNU/Linux Network and System Technologies Research Laboratory  #
+#############################################################################
+
+
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)
