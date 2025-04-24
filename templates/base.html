@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}antiNETattack{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="wrapper">
+
+        <!-- Page Content -->
+        <div id="content" style="margin-left: 0;">
+            <!-- Modern Header with Gradient Background -->
+            <header class="header-gradient py-2 mb-4">
+                <div class="container-fluid">
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-shield-alt me-2 header-icon"></i>
+                                <h1 class="header-title m-0">antiNETattack</h1>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <nav class="navbar navbar-expand-lg">
+                                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                                    <span class="navbar-toggler-icon"></span>
+                                </button>
+                                
+                                <div class="collapse navbar-collapse" id="navbarNav">
+                                    <ul class="navbar-nav me-auto">
+                                        <li class="nav-item">
+                                            <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/" id="homeLink"><i class="fas fa-home"></i> Home</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link {% if request.path == '/dashboard' %}active{% endif %}" href="/dashboard" id="dashboardLink"><i class="fas fa-chart-line"></i> Dashboard</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#settingsModal"><i class="fas fa-cog"></i> Settings</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#helpModal"><i class="fas fa-question-circle"></i> Help</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </nav>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-flex align-items-center justify-content-end">
+                                <div id="status-indicator" class="status-indicator status-stopped me-2">
+                                    <span id="status-text">Stopped</span>
+                                </div>
+                                <button id="toggleMonitoring" class="btn btn-glow">
+                                    <i class="fas fa-play"></i> Start Monitoring
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Alert container for notifications -->
+            <div id="alertContainer" class="container mt-3"></div>
+            
+            <div class="container mt-4">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="settingsModalLabel">Settings</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                                <button class="nav-link active" id="v-pills-general-tab" data-bs-toggle="pill" data-bs-target="#v-pills-general" type="button" role="tab" aria-controls="v-pills-general" aria-selected="true">General</button>
+                                <button class="nav-link" id="v-pills-network-tab" data-bs-toggle="pill" data-bs-target="#v-pills-network" type="button" role="tab" aria-controls="v-pills-network" aria-selected="false">Network</button>
+                                <button class="nav-link" id="v-pills-detection-tab" data-bs-toggle="pill" data-bs-target="#v-pills-detection" type="button" role="tab" aria-controls="v-pills-detection" aria-selected="false">Detection</button>
+                                <button class="nav-link" id="v-pills-notifications-tab" data-bs-toggle="pill" data-bs-target="#v-pills-notifications" type="button" role="tab" aria-controls="v-pills-notifications" aria-selected="false">Notifications</button>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="tab-content" id="v-pills-tabContent">
+                                <div class="tab-pane fade show active" id="v-pills-general" role="tabpanel" aria-labelledby="v-pills-general-tab">
+                                    <h4>General Settings</h4>
+                                    <div class="mb-3 form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="darkModeSwitch">
+                                        <label class="form-check-label" for="darkModeSwitch">Dark Mode</label>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="refreshRate" class="form-label">Dashboard Refresh Rate (seconds)</label>
+                                        <input type="number" class="form-control" id="refreshRate" min="1" max="60" value="5">
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="v-pills-network" role="tabpanel" aria-labelledby="v-pills-network-tab">
+                                    <h4>Network Settings</h4>
+                                    <div class="mb-3">
+                                        <label for="interfaceSelect" class="form-label">Network Interface</label>
+                                        <select class="form-select" id="interfaceSelect">
+                                            <option value="all">All Interfaces</option>
+                                            <option value="eth0">Ethernet</option>
+                                            <option value="wlan0">Wi-Fi</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3 form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="promiscuousModeSwitch" checked>
+                                        <label class="form-check-label" for="promiscuousModeSwitch">Promiscuous Mode</label>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="v-pills-detection" role="tabpanel" aria-labelledby="v-pills-detection-tab">
+                                    <h4>Detection Settings</h4>
+                                    <div class="mb-3">
+                                        <label for="sensitivityRange" class="form-label">Detection Sensitivity</label>
+                                        <input type="range" class="form-range" min="1" max="10" value="7" id="sensitivityRange">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Low</span>
+                                            <span>High</span>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="aiEnhancedSwitch" checked>
+                                        <label class="form-check-label" for="aiEnhancedSwitch">AI-Enhanced Detection</label>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="v-pills-notifications" role="tabpanel" aria-labelledby="v-pills-notifications-tab">
+                                    <h4>Notification Settings</h4>
+                                    <div class="mb-3 form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="desktopNotificationsSwitch" checked>
+                                        <label class="form-check-label" for="desktopNotificationsSwitch">Desktop Notifications</label>
+                                    </div>
+                                    <div class="mb-3 form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="emailNotificationsSwitch">
+                                        <label class="form-check-label" for="emailNotificationsSwitch">Email Notifications</label>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="emailAddress" class="form-label">Email Address</label>
+                                        <input type="email" class="form-control" id="emailAddress" placeholder="your@email.com">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveSettings">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="helpModalLabel">Help</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h4>Getting Started</h4>
+                    <p>antiNETattack is an advanced cybersecurity tool that uses artificial intelligence to detect network attacks.</p>
+                    
+                    <h5>Basic Usage:</h5>
+                    <ol>
+                        <li>Click the "Start Monitoring" button to begin monitoring your network</li>
+                        <li>View real-time attack detection on the Dashboard</li>
+                        <li>Configure settings according to your needs</li>
+                    </ol>
+                    
+                    <h5>Understanding Network Attack Types:</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul>
+                                <li><strong>DDoS:</strong> Distributed Denial of Service attacks from multiple sources</li>
+                                <li><strong>DoS:</strong> Denial of Service attacks from a single source</li>
+                                <li><strong>Port Scanning:</strong> Attempts to find open ports on your network</li>
+                                <li><strong>SYN Flood:</strong> Overwhelming a system with SYN packets</li>
+                                <li><strong>UDP Flood:</strong> Flooding a target with UDP packets</li>
+                                <li><strong>Ping Flood:</strong> Overwhelming a target with ICMP echo requests</li>
+                                <li><strong>TCP Reset Attack:</strong> Abruptly terminating TCP connections</li>
+                                <li><strong>ARP Spoofing:</strong> Linking attacker's MAC address to a legitimate IP</li>
+                                <li><strong>DNS Spoofing:</strong> Redirecting domain traffic to malicious servers</li>
+                                <li><strong>IP Spoofing:</strong> Disguising source IP addresses in packets</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul>
+                                <li><strong>MAC Spoofing:</strong> Changing a device's MAC address to bypass filters</li>
+                                <li><strong>DHCP Spoofing:</strong> Providing false network configuration information</li>
+                                <li><strong>Session Hijacking:</strong> Taking over an active communication session</li>
+                                <li><strong>Replay Attack:</strong> Retransmitting valid data transmissions</li>
+                                <li><strong>Smurf Attack:</strong> Using broadcast addresses for amplification</li>
+                                <li><strong>ICMP Redirect:</strong> Altering routing tables through ICMP messages</li>
+                                <li><strong>Deauth Attack:</strong> Forcing wireless clients to disconnect</li>
+                                <li><strong>NetBIOS Enumeration:</strong> Gathering information about network resources</li>
+                                <li><strong>Network Worm:</strong> Self-replicating malware spreading across networks</li>
+                                <li><strong>Man-in-the-Middle:</strong> Intercepting communications between systems</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Common utility functions -->
+    <script>
+        // Function to show alert messages
+        function showAlert(message, type = 'info') {
+            // Create alert element
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.role = 'alert';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            // Add to container
+            const alertContainer = document.getElementById('alertContainer');
+            if (alertContainer) {
+                alertContainer.appendChild(alertDiv);
+                
+                // Auto-dismiss after 5 seconds
+                setTimeout(() => {
+                    alertDiv.classList.remove('show');
+                    setTimeout(() => alertDiv.remove(), 150);
+                }, 5000);
+            }
+        }
+        
+        // Navigation with monitoring state preservation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listeners to navigation links
+            const homeLink = document.getElementById('homeLink');
+            const dashboardLink = document.getElementById('dashboardLink');
+            
+            // Function to handle navigation with monitoring state
+            function handleNavigation(e, targetUrl) {
+                // Only intercept if monitoring is active
+                if (sessionStorage.getItem('monitoringActive') === 'true') {
+                    console.log('Navigation with active monitoring to:', targetUrl);
+                    // Store that we're navigating with monitoring active
+                    sessionStorage.setItem('navigatingWithMonitoring', 'true');
+                }
+            }
+            
+            // Add event listeners to navigation links
+            if (homeLink) {
+                homeLink.addEventListener('click', function(e) {
+                    handleNavigation(e, '/');
+                });
+            }
+            
+            if (dashboardLink) {
+                dashboardLink.addEventListener('click', function(e) {
+                    handleNavigation(e, '/dashboard');
+                });
+            }
+        });
+    </script>
+    
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

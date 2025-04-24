@@ -1,0 +1,1114 @@
+{% extends 'base.html' %}
+
+{% block title %}antiNETattack - Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .attack-card {
+        transition: all 0.3s ease;
+    }
+    .attack-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .severity-Critical {
+        border-left: 5px solid #dc3545;
+    }
+    .severity-High {
+        border-left: 5px solid #fd7e14;
+    }
+    .severity-Medium {
+        border-left: 5px solid #ffc107;
+    }
+    .severity-Low {
+        border-left: 5px solid #20c997;
+    }
+    .chart-container {
+        position: relative;
+        height: 250px;
+    }
+    .stats-card {
+        text-align: center;
+        padding: 20px;
+    }
+    .stats-card .stats-value {
+        font-size: 2.5rem;
+        font-weight: bold;
+    }
+    .stats-card .stats-label {
+        font-size: 1rem;
+        color: #6c757d;
+    }
+    .attack-list {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1>Security Dashboard</h1>
+        <p class="lead">Real-time network security monitoring and attack detection</p>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <!-- Stats Cards -->
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-value" id="totalAttacksValue">0</div>
+            <div class="stats-label">Total Attacks</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-value" id="anomalyValue">0</div>
+            <div class="stats-label">Potential Zero-Days</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-value" id="attackRateValue">0%</div>
+            <div class="stats-label">Attack Rate</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-value" id="totalPacketsValue">0</div>
+            <div class="stats-label">Total Packets</div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <!-- More Stats Cards -->
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-value" id="criticalAttacksValue">0</div>
+            <div class="stats-label">Critical Attacks</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-value" id="uniqueSourcesValue">0</div>
+            <div class="stats-label">Unique Sources</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-value" id="topAttackTypeValue">-</div>
+            <div class="stats-label">Top Attack Type</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-value" id="anomalyRateValue">0%</div>
+            <div class="stats-label">Anomaly Rate</div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <!-- Charts -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Attack Types Distribution</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="attackTypesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Severity Distribution</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="severityChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <!-- Protocol and Network Analysis -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Protocol Distribution</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="protocolChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Packet Size Distribution</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="packetSizeChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <!-- Advanced Analysis -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Top Targeted Ports</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="portsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Anomaly Detection</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="anomalyChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <!-- Attack Timeline -->
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Attack Timeline</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="timelineChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <!-- Recent Attacks -->
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5>Recent Attacks</h5>
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-outline-secondary" id="refreshAttackList">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" id="clearAttackList">
+                        <i class="fas fa-trash"></i> Clear
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="attack-list" id="attackList">
+                    <div class="text-center py-5" id="noAttacksMessage">
+                        <i class="fas fa-shield-alt fa-3x mb-3 text-muted"></i>
+                        <p class="text-muted">No attacks detected yet. Start monitoring to detect potential threats.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Attack Details Modal -->
+<div class="modal fade" id="attackDetailsModal" tabindex="-1" aria-labelledby="attackDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="attackDetailsModalLabel">Attack Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="attackDetailsContent">
+                <!-- Attack details will be populated here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger" id="blockSourceBtn">Block Source</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Chart variables
+        let attackTypesChart, severityChart, timelineChart;
+        let attackData = [];
+        let refreshInterval;
+        
+        // Initialize charts
+        function initCharts() {
+            // Attack Types Chart
+            const attackTypesCtx = document.getElementById('attackTypesChart').getContext('2d');
+            attackTypesChart = new Chart(attackTypesCtx, {
+                type: 'pie',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [
+                            '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+                            '#5a5c69', '#858796', '#6f42c1', '#20c9a6', '#fd7e14'
+                        ],
+                        hoverBackgroundColor: [
+                            '#2e59d9', '#17a673', '#2c9faf', '#f4b619', '#e02d1b',
+                            '#4e4f58', '#717384', '#5d36a4', '#17a689', '#f57102'
+                        ],
+                        hoverBorderColor: "rgba(234, 236, 244, 1)",
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    tooltips: {
+                        backgroundColor: "rgb(255,255,255)",
+                        bodyFontColor: "#858796",
+                        borderColor: '#dddfeb',
+                        borderWidth: 1,
+                        xPadding: 15,
+                        yPadding: 15,
+                        displayColors: false,
+                        caretPadding: 10,
+                    },
+                    legend: {
+                        display: true,
+                        position: 'right'
+                    },
+                    cutoutPercentage: 0,
+                }
+            });
+            
+            // Severity Chart
+            const severityCtx = document.getElementById('severityChart').getContext('2d');
+            severityChart = new Chart(severityCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Critical', 'High', 'Medium', 'Low'],
+                    datasets: [{
+                        data: [0, 0, 0, 0],
+                        backgroundColor: ['#e74a3b', '#fd7e14', '#f6c23e', '#1cc88a'],
+                        hoverBackgroundColor: ['#e02d1b', '#f57102', '#f4b619', '#17a673'],
+                        hoverBorderColor: "rgba(234, 236, 244, 1)",
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    tooltips: {
+                        backgroundColor: "rgb(255,255,255)",
+                        bodyFontColor: "#858796",
+                        borderColor: '#dddfeb',
+                        borderWidth: 1,
+                        xPadding: 15,
+                        yPadding: 15,
+                        displayColors: false,
+                        caretPadding: 10,
+                    },
+                    legend: {
+                        display: true,
+                        position: 'right'
+                    },
+                    cutoutPercentage: 70,
+                }
+            });
+            
+            // Protocol Distribution Chart
+            const protocolCtx = document.getElementById('protocolChart').getContext('2d');
+            protocolChart = new Chart(protocolCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['TCP', 'UDP', 'ICMP'],
+                    datasets: [{
+                        data: [0, 0, 0],
+                        backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc'],
+                        hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf'],
+                        hoverBorderColor: "rgba(234, 236, 244, 1)",
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    tooltips: {
+                        backgroundColor: "rgb(255,255,255)",
+                        bodyFontColor: "#858796",
+                        borderColor: '#dddfeb',
+                        borderWidth: 1,
+                        xPadding: 15,
+                        yPadding: 15,
+                        displayColors: false,
+                        caretPadding: 10,
+                    },
+                    legend: {
+                        display: true,
+                        position: 'right'
+                    },
+                    cutoutPercentage: 0,
+                }
+            });
+            
+            // Packet Size Distribution Chart
+            const packetSizeCtx = document.getElementById('packetSizeChart').getContext('2d');
+            packetSizeChart = new Chart(packetSizeCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['0-100', '101-500', '501-1000', '1001-1500'],
+                    datasets: [{
+                        label: 'Packet Count',
+                        data: [0, 0, 0, 0],
+                        backgroundColor: '#4e73df',
+                        hoverBackgroundColor: '#2e59d9',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false,
+                                drawBorder: false
+                            },
+                            ticks: {
+                                maxTicksLimit: 6
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                min: 0,
+                                maxTicksLimit: 5,
+                                padding: 10,
+                            },
+                            grid: {
+                                color: "rgb(234, 236, 244)",
+                                drawBorder: false,
+                                borderDash: [2],
+                                zeroLineBorderDash: [2]
+                            }
+                        },
+                    },
+                    legend: {
+                        display: false
+                    },
+                    tooltips: {
+                        backgroundColor: "rgb(255,255,255)",
+                        bodyFontColor: "#858796",
+                        titleMarginBottom: 10,
+                        titleFontColor: '#6e707e',
+                        titleFontSize: 14,
+                        borderColor: '#dddfeb',
+                        borderWidth: 1,
+                        xPadding: 15,
+                        yPadding: 15,
+                        displayColors: false,
+                        caretPadding: 10,
+                    },
+                }
+            });
+            
+            // Top Ports Chart
+            const portsCtx = document.getElementById('portsChart').getContext('2d');
+            portsChart = new Chart(portsCtx, {
+                type: 'horizontalBar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Frequency',
+                        data: [],
+                        backgroundColor: '#36b9cc',
+                        hoverBackgroundColor: '#2c9faf',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            ticks: {
+                                min: 0,
+                                maxTicksLimit: 5,
+                            },
+                            grid: {
+                                color: "rgb(234, 236, 244)",
+                                drawBorder: false,
+                                borderDash: [2],
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false,
+                                drawBorder: false
+                            },
+                            ticks: {
+                                maxTicksLimit: 10
+                            }
+                        },
+                    },
+                    legend: {
+                        display: false
+                    },
+                    tooltips: {
+                        backgroundColor: "rgb(255,255,255)",
+                        bodyFontColor: "#858796",
+                        titleMarginBottom: 10,
+                        titleFontColor: '#6e707e',
+                        titleFontSize: 14,
+                        borderColor: '#dddfeb',
+                        borderWidth: 1,
+                        xPadding: 15,
+                        yPadding: 15,
+                        displayColors: false,
+                        caretPadding: 10,
+                    },
+                }
+            });
+            
+            // Anomaly Detection Chart
+            const anomalyCtx = document.getElementById('anomalyChart').getContext('2d');
+            anomalyChart = new Chart(anomalyCtx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 20}, (_, i) => `${i*5}m ago`).reverse(),
+                    datasets: [{
+                        label: 'Anomaly Score',
+                        lineTension: 0.3,
+                        backgroundColor: "rgba(231, 74, 59, 0.05)",
+                        borderColor: "rgba(231, 74, 59, 1)",
+                        pointRadius: 3,
+                        pointBackgroundColor: "rgba(231, 74, 59, 1)",
+                        pointBorderColor: "rgba(231, 74, 59, 1)",
+                        pointHoverRadius: 3,
+                        pointHoverBackgroundColor: "rgba(231, 74, 59, 1)",
+                        pointHoverBorderColor: "rgba(231, 74, 59, 1)",
+                        pointHitRadius: 10,
+                        pointBorderWidth: 2,
+                        data: Array(20).fill(0),
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            left: 10,
+                            right: 25,
+                            top: 25,
+                            bottom: 0
+                        }
+                    },
+                    scales: {
+                        x: {
+                            time: {
+                                unit: 'time'
+                            },
+                            grid: {
+                                display: false,
+                                drawBorder: false
+                            },
+                            ticks: {
+                                maxTicksLimit: 7
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                min: 0,
+                                max: 1,
+                                maxTicksLimit: 5,
+                                padding: 10,
+                            },
+                            grid: {
+                                color: "rgb(234, 236, 244)",
+                                drawBorder: false,
+                                borderDash: [2],
+                            }
+                        },
+                    },
+                    legend: {
+                        display: false
+                    },
+                    tooltips: {
+                        backgroundColor: "rgb(255,255,255)",
+                        bodyFontColor: "#858796",
+                        titleMarginBottom: 10,
+                        titleFontColor: '#6e707e',
+                        titleFontSize: 14,
+                        borderColor: '#dddfeb',
+                        borderWidth: 1,
+                        xPadding: 15,
+                        yPadding: 15,
+                        displayColors: false,
+                        intersect: false,
+                        mode: 'index',
+                        caretPadding: 10,
+                        callbacks: {
+                            label: function(tooltipItem, chart) {
+                                var datasetLabel = chart.datasets[tooltipItem.datasetIndex].label || '';
+                                return datasetLabel + ': ' + tooltipItem.yLabel.toFixed(2);
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Timeline Chart
+            const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+            timelineChart = new Chart(timelineCtx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 20}, (_, i) => `${i*5}m ago`).reverse(),
+                    datasets: [{
+                        label: 'Attacks',
+                        lineTension: 0.3,
+                        backgroundColor: "rgba(78, 115, 223, 0.05)",
+                        borderColor: "rgba(78, 115, 223, 1)",
+                        pointRadius: 3,
+                        pointBackgroundColor: "rgba(78, 115, 223, 1)",
+                        pointBorderColor: "rgba(78, 115, 223, 1)",
+                        pointHoverRadius: 3,
+                        pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
+                        pointHoverBorderColor: "rgba(78, 115, 223, 1)",
+                        pointHitRadius: 10,
+                        pointBorderWidth: 2,
+                        data: Array(20).fill(0),
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            left: 10,
+                            right: 25,
+                            top: 25,
+                            bottom: 0
+                        }
+                    },
+                    scales: {
+                        x: {
+                            time: {
+                                unit: 'time'
+                            },
+                            grid: {
+                                display: false,
+                                drawBorder: false
+                            },
+                            ticks: {
+                                maxTicksLimit: 7
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                maxTicksLimit: 5,
+                                padding: 10,
+                                beginAtZero: true
+                            },
+                            grid: {
+                                color: "rgb(234, 236, 244)",
+                                drawBorder: false,
+                                borderDash: [2],
+                            }
+                        },
+                    },
+                    legend: {
+                        display: false
+                    },
+                    tooltips: {
+                        backgroundColor: "rgb(255,255,255)",
+                        bodyFontColor: "#858796",
+                        titleMarginBottom: 10,
+                        titleFontColor: '#6e707e',
+                        titleFontSize: 14,
+                        borderColor: '#dddfeb',
+                        borderWidth: 1,
+                        xPadding: 15,
+                        yPadding: 15,
+                        displayColors: false,
+                        intersect: false,
+                        mode: 'index',
+                        caretPadding: 10,
+                    }
+                }
+            });
+        }
+        
+        // Update charts with new data
+        function updateCharts(data) {
+            // Update attack types chart
+            const attackTypes = data.attack_types || {};
+            attackTypesChart.data.labels = Object.keys(attackTypes);
+            attackTypesChart.data.datasets[0].data = Object.values(attackTypes);
+            attackTypesChart.update();
+            
+            // Update severity chart
+            const severityDist = data.severity_distribution || {};
+            const severityData = [
+                severityDist['Critical'] || 0,
+                severityDist['High'] || 0,
+                severityDist['Medium'] || 0,
+                severityDist['Low'] || 0
+            ];
+            severityChart.data.datasets[0].data = severityData;
+            severityChart.update();
+            
+            // Update protocol distribution chart
+            const protocolDist = data.protocol_distribution || {};
+            protocolChart.data.labels = Object.keys(protocolDist);
+            protocolChart.data.datasets[0].data = Object.values(protocolDist);
+            protocolChart.update();
+            
+            // Update packet size distribution chart
+            const packetSizeDist = data.packet_size_distribution || {};
+            const packetSizeData = [
+                packetSizeDist['0-100'] || 0,
+                packetSizeDist['101-500'] || 0,
+                packetSizeDist['501-1000'] || 0,
+                packetSizeDist['1001-1500'] || 0
+            ];
+            packetSizeChart.data.datasets[0].data = packetSizeData;
+            packetSizeChart.update();
+            
+            // Update top ports chart
+            const topPorts = data.top_ports || {};
+            portsChart.data.labels = Object.keys(topPorts);
+            portsChart.data.datasets[0].data = Object.values(topPorts);
+            portsChart.update();
+            
+            // Update anomaly detection chart
+            const anomalyScores = data.anomaly_scores || {};
+            anomalyChart.data.datasets[0].data = Object.values(anomalyScores);
+            anomalyChart.update();
+            
+            // Update timeline chart (last 10 minutes)
+            const timePoints = {};
+            const now = new Date();
+            
+            // Initialize time points for the last 10 minutes
+            for (let i = 9; i >= 0; i--) {
+                const time = new Date(now - i * 60000);
+                const timeLabel = time.getHours().toString().padStart(2, '0') + ':' + 
+                                  time.getMinutes().toString().padStart(2, '0');
+                timePoints[timeLabel] = 0;
+            }
+            
+            // Count attacks by minute
+            attackData.forEach(attack => {
+                const attackTime = new Date(attack.timestamp);
+                const timeLabel = attackTime.getHours().toString().padStart(2, '0') + ':' + 
+                                  attackTime.getMinutes().toString().padStart(2, '0');
+                
+                if (timePoints.hasOwnProperty(timeLabel)) {
+                    timePoints[timeLabel]++;
+                }
+            });
+            
+            timelineChart.data.labels = Object.keys(timePoints);
+            timelineChart.data.datasets[0].data = Object.values(timePoints);
+            timelineChart.update();
+        }
+        
+        // Update stats cards
+        function updateStats(data) {
+            // Update stats cards
+            document.getElementById('totalAttacksValue').textContent = data.attacks_detected || 0;
+            document.getElementById('totalPacketsValue').textContent = data.total_packets || 0;
+            
+            // Update anomaly stats
+            document.getElementById('anomalyValue').textContent = data.anomalies_detected || 0;
+            
+            // Calculate attack rate percentage
+            const attackRate = data.attack_rate ? data.attack_rate.toFixed(1) : '0';
+            document.getElementById('attackRateValue').textContent = attackRate + '%';
+            
+            // Calculate anomaly rate percentage
+            const anomalyRate = data.anomaly_rate ? data.anomaly_rate.toFixed(1) : '0';
+            document.getElementById('anomalyRateValue').textContent = anomalyRate + '%';
+            
+            // Count critical attacks
+            let criticalCount = 0;
+            let severityDistribution = {};
+            if (data.recent_attacks) {
+                data.recent_attacks.forEach(attack => {
+                    if (attack.severity === 'Critical') criticalCount++;
+                    
+                    // Build severity distribution
+                    if (!severityDistribution[attack.severity]) {
+                        severityDistribution[attack.severity] = 0;
+                    }
+                    severityDistribution[attack.severity]++;
+                });
+            }
+            document.getElementById('criticalAttacksValue').textContent = criticalCount;
+            
+            // Count unique sources
+            const uniqueSources = new Set();
+            if (data.recent_attacks) {
+                data.recent_attacks.forEach(attack => {
+                    uniqueSources.add(attack.source_ip);
+                });
+            }
+            document.getElementById('uniqueSourcesValue').textContent = uniqueSources.size;
+            
+            // Find top attack type
+            let topAttackType = '-';
+            let maxCount = 0;
+            if (data.attack_types) {
+                for (const [type, count] of Object.entries(data.attack_types)) {
+                    if (count > maxCount) {
+                        maxCount = count;
+                        topAttackType = type;
+                    }
+                }
+            }
+            document.getElementById('topAttackTypeValue').textContent = topAttackType;
+        }
+        
+        // Update attack list
+        function updateAttackList() {
+            const attackList = document.getElementById('attackList');
+            const noAttacksMessage = document.getElementById('noAttacksMessage');
+            
+            if (attackData.length === 0) {
+                noAttacksMessage.style.display = 'block';
+                attackList.innerHTML = '';
+                return;
+            }
+            
+            noAttacksMessage.style.display = 'none';
+            
+            // Sort attacks by timestamp (newest first)
+            const sortedAttacks = [...attackData].sort((a, b) => {
+                return new Date(b.timestamp) - new Date(a.timestamp);
+            });
+            
+            // Create attack cards
+            let attackCardsHTML = '';
+            
+            sortedAttacks.forEach((attack, index) => {
+                attackCardsHTML += `
+                    <div class="card mb-3 attack-card severity-${attack.severity}" data-attack-index="${index}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="card-title">${attack.type} Attack</h5>
+                                <span class="badge bg-${getSeverityBadgeClass(attack.severity)}">${attack.severity}</span>
+                            </div>
+                            <h6 class="card-subtitle mb-2 text-muted">${attack.timestamp}</h6>
+                            <p class="card-text">Source: ${attack.source_ip} → Destination: ${attack.destination_ip}:${attack.port}</p>
+                            <button class="btn btn-sm btn-outline-primary view-details-btn" data-attack-index="${index}">
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            attackList.innerHTML = attackCardsHTML;
+            
+            // Add event listeners to view details buttons
+            document.querySelectorAll('.view-details-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const attackIndex = this.getAttribute('data-attack-index');
+                    showAttackDetails(sortedAttacks[attackIndex]);
+                });
+            });
+        }
+        
+        // Show attack details in modal
+        function showAttackDetails(attack) {
+            const modal = document.getElementById('attackDetailsModal');
+            const modalContent = document.getElementById('attackDetailsContent');
+            const blockSourceBtn = document.getElementById('blockSourceBtn');
+            
+            // Set modal title
+            document.getElementById('attackDetailsModalLabel').textContent = `${attack.type} Attack Details`;
+            
+            // Generate attack details HTML
+            const detailsHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Basic Information</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <th>Timestamp</th>
+                                <td>${attack.timestamp}</td>
+                            </tr>
+                            <tr>
+                                <th>Attack Type</th>
+                                <td>${attack.type}</td>
+                            </tr>
+                            <tr>
+                                <th>Severity</th>
+                                <td><span class="badge bg-${getSeverityBadgeClass(attack.severity)}">${attack.severity}</span></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Network Information</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <th>Source IP</th>
+                                <td>${attack.source_ip}</td>
+                            </tr>
+                            <tr>
+                                <th>Destination IP</th>
+                                <td>${attack.destination_ip}</td>
+                            </tr>
+                            <tr>
+                                <th>Port</th>
+                                <td>${attack.port}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <h6>Attack Details</h6>
+                        <div class="alert alert-secondary">
+                            ${attack.details}
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <h6>Recommended Actions</h6>
+                        <ul>
+                            ${getRecommendedActions(attack.type, attack.severity)}
+                        </ul>
+                    </div>
+                </div>
+            `;
+            
+            modalContent.innerHTML = detailsHTML;
+            
+            // Set up block source button
+            blockSourceBtn.setAttribute('data-source-ip', attack.source_ip);
+            
+            // Show modal
+            const modalInstance = new bootstrap.Modal(modal);
+            modalInstance.show();
+        }
+        
+        // Get severity badge class
+        function getSeverityBadgeClass(severity) {
+            switch (severity) {
+                case 'Critical': return 'danger';
+                case 'High': return 'warning';
+                case 'Medium': return 'info';
+                case 'Low': return 'success';
+                default: return 'secondary';
+            }
+        }
+        
+        // Get recommended actions based on attack type and severity
+        function getRecommendedActions(type, severity) {
+            let actions = '';
+            
+            // Common actions
+            if (severity === 'Critical' || severity === 'High') {
+                actions += '<li>Block the source IP address immediately</li>';
+            } else {
+                actions += '<li>Monitor the source IP for additional suspicious activity</li>';
+            }
+            
+            // Type-specific actions
+            switch (type) {
+                case 'DDoS':
+                    actions += '<li>Enable DDoS protection if available</li>';
+                    actions += '<li>Contact your ISP if the attack persists</li>';
+                    break;
+                case 'Port Scanning':
+                    actions += '<li>Review firewall rules to ensure only necessary ports are open</li>';
+                    actions += '<li>Consider implementing port knocking for sensitive services</li>';
+                    break;
+                case 'SQL Injection':
+                    actions += '<li>Review and patch vulnerable applications</li>';
+                    actions += '<li>Implement input validation and parameterized queries</li>';
+                    break;
+                case 'Brute Force':
+                    actions += '<li>Implement account lockout policies</li>';
+                    actions += '<li>Enable two-factor authentication</li>';
+                    break;
+                case 'Man-in-the-Middle':
+                    actions += '<li>Ensure all sensitive communications use HTTPS</li>';
+                    actions += '<li>Verify network security and encryption protocols</li>';
+                    break;
+            }
+            
+            return actions;
+        }
+        
+        // Fetch attack data from API
+        function fetchAttackData() {
+            // Get attack stats
+            fetch('/api/stats')
+                .then(response => response.json())
+                .then(data => {
+                    // Store attack data for the attack list
+                    attackData = data.recent_attacks || [];
+                    
+                    // Update UI components
+                    updateAttackList();
+                    updateCharts(data);
+                    updateStats(data);
+                    
+                    // Get packet analysis data for advanced charts
+                    return fetch('/api/packet-analysis');
+                })
+                .then(response => response.json())
+                .then(analysisData => {
+                    // Update protocol chart
+                    if (protocolChart && analysisData.protocols) {
+                        protocolChart.data.labels = Object.keys(analysisData.protocols);
+                        protocolChart.data.datasets[0].data = Object.values(analysisData.protocols);
+                        protocolChart.update();
+                    }
+                    
+                    // Update packet size chart
+                    if (packetSizeChart && analysisData.packet_size_distribution) {
+                        packetSizeChart.data.datasets[0].data = [
+                            analysisData.packet_size_distribution['0-100'] || 0,
+                            analysisData.packet_size_distribution['101-500'] || 0,
+                            analysisData.packet_size_distribution['501-1000'] || 0,
+                            analysisData.packet_size_distribution['1001-1500'] || 0
+                        ];
+                        packetSizeChart.update();
+                    }
+                    
+                    // Update ports chart
+                    if (portsChart && analysisData.top_ports) {
+                        const portLabels = Object.keys(analysisData.top_ports);
+                        const portData = Object.values(analysisData.top_ports);
+                        portsChart.data.labels = portLabels;
+                        portsChart.data.datasets[0].data = portData;
+                        portsChart.update();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching attack data:', error);
+                });
+        }
+        
+        // Initialize dashboard
+        function initDashboard() {
+            // Initialize chart variables
+            let protocolChart, packetSizeChart, portsChart, anomalyChart;
+            
+            // Initialize all charts
+            initCharts();
+            fetchAttackData();
+            
+            // Set up refresh interval (every 3 seconds)
+            refreshInterval = setInterval(fetchAttackData, 3000);
+            
+            // Set up event listeners
+            document.getElementById('refreshAttackList').addEventListener('click', fetchAttackData);
+            
+            document.getElementById('clearAttackList').addEventListener('click', function() {
+                if (confirm('Are you sure you want to clear all attack data?')) {
+                    // Call the reset API endpoint
+                    fetch('/api/reset')
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Stats reset:', data);
+                            attackData = [];
+                            updateAttackList();
+                            
+                            // Reset all charts
+                            updateCharts({
+                                attack_types: {},
+                                attacks_detected: 0,
+                                total_packets: 0,
+                                anomalies_detected: 0
+                            });
+                            
+                            // Reset all stats
+                            updateStats({
+                                attacks_detected: 0,
+                                total_packets: 0,
+                                anomalies_detected: 0,
+                                attack_rate: 0,
+                                anomaly_rate: 0
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Error resetting stats:', error);
+                        });
+                }
+            });
+            
+            document.getElementById('blockSourceBtn').addEventListener('click', function() {
+                const sourceIp = this.getAttribute('data-source-ip');
+                alert(`Source IP ${sourceIp} has been blocked.`);
+                // In a real application, this would call an API to block the IP
+            });
+            
+            // Check monitoring status on page load
+            fetch('/api/monitoring-status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.monitoring) {
+                        // If monitoring is active, ensure our refresh interval is running
+                        if (!refreshInterval) {
+                            refreshInterval = setInterval(fetchAttackData, 3000);
+                        }
+                    } else {
+                        // If monitoring is not active, clear the interval
+                        if (refreshInterval) {
+                            clearInterval(refreshInterval);
+                            refreshInterval = null;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking monitoring status:', error);
+                });
+            
+            // Sync with monitoring toggle
+            const monitoringStatus = document.getElementById('monitoringStatus');
+            if (monitoringStatus) {
+                monitoringStatus.addEventListener('change', function() {
+                    const isMonitoring = this.classList.contains('active');
+                    if (isMonitoring) {
+                        // Start monitoring
+                        fetchAttackData();
+                        if (!refreshInterval) {
+                            refreshInterval = setInterval(fetchAttackData, 3000);
+                        }
+                    } else {
+                        // Stop monitoring
+                        if (refreshInterval) {
+                            clearInterval(refreshInterval);
+                            refreshInterval = null;
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Initialize dashboard when DOM is loaded
+        initDashboard();
+    });
+</script>
+{% endblock %}

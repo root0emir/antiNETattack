@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block title %}antiNETattack - Home{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card welcome-card">
+            <div class="card-body">
+                <h1 class="card-title">Welcome to antiNETattack</h1>
+                <p class="card-text">
+                    antiNETattack is an advanced cybersecurity tool that uses artificial intelligence to detect network attacks through a sophisticated web interface.
+                </p>
+                <div class="d-flex justify-content-center mt-4">
+                    <a href="/dashboard" class="btn btn-primary btn-lg me-3">
+                        <i class="fas fa-chart-line"></i> Go to Dashboard
+                    </a>
+                    <button class="btn btn-success btn-lg" id="homeStartMonitoring">
+                        <i class="fas fa-play"></i> Start Monitoring
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card feature-card">
+            <div class="card-body text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h5 class="card-title">Real-time Protection</h5>
+                <p class="card-text">Monitor your network traffic in real-time and detect potential attacks as they happen.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card feature-card">
+            <div class="card-body text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h5 class="card-title">AI-Powered Detection</h5>
+                <p class="card-text">Leverage advanced artificial intelligence to identify complex attack patterns.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card feature-card">
+            <div class="card-body text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                <h5 class="card-title">Comprehensive Analytics</h5>
+                <p class="card-text">Visualize attack data and gain insights through detailed analytics and reporting.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Getting Started</h5>
+            </div>
+            <div class="card-body">
+                <ol class="getting-started-list">
+                    <li>
+                        <strong>Start Monitoring:</strong> Click the "Start Monitoring" button to begin analyzing network traffic.
+                    </li>
+                    <li>
+                        <strong>View Dashboard:</strong> Navigate to the Dashboard to see real-time attack detection and statistics.
+                    </li>
+                    <li>
+                        <strong>Configure Settings:</strong> Customize the application settings to suit your specific needs.
+                    </li>
+                    <li>
+                        <strong>Respond to Threats:</strong> Take appropriate action when potential threats are detected.
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>System Status</h5>
+            </div>
+            <div class="card-body">
+                <div class="system-status">
+                    <div class="status-item">
+                        <span class="status-label">Monitoring Status:</span>
+                        <span class="status-value" id="monitoringStatus">Inactive</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Network Interface:</span>
+                        <span class="status-value">All Interfaces</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">AI Engine:</span>
+                        <span class="status-value">Active</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Last Attack Detected:</span>
+                        <span class="status-value" id="lastAttackTime">None</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Total Attacks Detected:</span>
+                        <span class="status-value" id="totalAttacks">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Home page specific JavaScript
+        const homeStartBtn = document.getElementById('homeStartMonitoring');
+        const monitoringStatus = document.getElementById('monitoringStatus');
+        const lastAttackTime = document.getElementById('lastAttackTime');
+        const totalAttacks = document.getElementById('totalAttacks');
+        
+        // Sync with the main monitoring button
+        homeStartBtn.addEventListener('click', function() {
+            const mainBtn = document.getElementById('toggleMonitoring');
+            mainBtn.click();
+        });
+        
+        // Update status from the main monitoring status
+        function updateHomeStatus() {
+            const statusIndicator = document.getElementById('status-indicator');
+            const statusText = document.getElementById('status-text');
+            
+            if (statusIndicator.classList.contains('status-running')) {
+                monitoringStatus.textContent = 'Active';
+                monitoringStatus.className = 'status-value text-success';
+            } else {
+                monitoringStatus.textContent = 'Inactive';
+                monitoringStatus.className = 'status-value text-danger';
+            }
+            
+            // Fetch attack stats
+            fetch('/api/stats')
+                .then(response => response.json())
+                .then(data => {
+                    totalAttacks.textContent = data.total_attacks;
+                    
+                    if (data.recent_attacks && data.recent_attacks.length > 0) {
+                        const mostRecent = data.recent_attacks[data.recent_attacks.length - 1];
+                        lastAttackTime.textContent = mostRecent.timestamp;
+                    }
+                });
+        }
+        
+        // Update every 5 seconds
+        updateHomeStatus();
+        setInterval(updateHomeStatus, 5000);
+    });
+</script>
+{% endblock %}
